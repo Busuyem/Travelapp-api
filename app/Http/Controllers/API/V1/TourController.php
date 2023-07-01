@@ -13,7 +13,7 @@ class TourController extends Controller
 {
     public function index(Travel $travel):JsonResource
     {
-        $tours = $travel->tours()->orderBy('created_at')->paginate(10);
+        $tours = $travel->tours()->orderBy('created_at')->paginate(15);
 
         return TourResource::collection($tours);
     }

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Testing\Concerns\AssertsStatusCodes;
 use SebastianBergmann\Type\VoidType;
 use Tests\TestCase;
 use App\Models\Tour;
@@ -31,6 +32,7 @@ class ToursListTest extends TestCase
     public function test_tour_price_is_shown_correctly():void
     {
         $travel = Travel::factory()->create();
+
         Tour::create([
             'travel_id' => $travel->id,
             'price' => 123.45
@@ -38,14 +40,18 @@ class ToursListTest extends TestCase
 
         $response = $this->get('/api/v1/travels/'.$travel->slug.'/tours');
         $response->assertStatus(200);
-        $response->assertJsonCount(1);
+        $response->assertJsonCount(1, 'data');
         $response->assertJsonFragment(['price'=>123.45]);
     }
 
     public function test_tours_list_returns_pagination():Void
     {
-        $toursPerPage = config('paginationPerPage.tours');
         $travel = Travel::factory()->create();
-        Tour::factory($toursPerPage+1)->create(['travel_id'=>$travel->id]);
+        Tour::factory(16)->create(['travel_id'=>$travel->id]);
+
+        $response = $this->get('/api/v1/travels/'.$travel->slug.'/tours');
+        $response->assertStatus(200);
+        $response->assertJsonCount(15, 'data');
+        $response->assertJsonPath('meta.last_page', 2);
     }
 }
